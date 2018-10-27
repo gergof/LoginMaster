@@ -6,7 +6,7 @@ require_once("interfaces.php");
 require_once("utils.php");
 
 class LoginMaster{
-    public function __construct($config, $eventHandler, $passwordEngine, $twoFactor){
+    public function __construct($config, $eventHandler=defaultHandler, $passwordEngine=defaultPasswordEngine, $twoFactor=defaultTwoFactor){
         $this->config=$config;
         $this->eventHandler=$eventHandler;
         $this->passwordEngine=$passwordEngine;
