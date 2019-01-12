@@ -14,7 +14,7 @@ interface TwoFactor{
 }
 
 class defaultHandler implements Handler{
-    public function handle($state, $target){
+    public function handle($state, $target=0){
         echo $state;
     }
 }

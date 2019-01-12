@@ -80,6 +80,7 @@ class LoginMaster{
                     if($this->isRememberingUser() && $this->twoFactor->challange($this->isRememberingUser())){
                         //remembering user. Allow login
                         $this->permitAccess($this->isRememberingUser());
+                        return;
                     }
                 }
 
@@ -87,7 +88,7 @@ class LoginMaster{
                 //prepare query
                 $sql=$this->config->getPDO()->prepare("SELECT COUNT(id) AS count, id, password FROM users WHERE ".$this->config->getUsernameField()."=:identifier and id<>1");
                 $sql->execute(array(":identifier"=>$uname));
-                $res=$sql->fetch(PDO::FETCH_ASSOC);
+                $res=$sql->fetch(\PDO::FETCH_ASSOC);
 
                 //check if user exists
                 if($res["count"]==0){
@@ -139,7 +140,7 @@ class LoginMaster{
         else{
             $sql=$this->config->getPDO()->prepare("SELECT auth_token FROM login_history WHERE user=:id and success=1 ORDER BY id DESC LIMIT 1");
             $sql->execute(array(":id"=>$_SESSION["lm_id"]));
-            $res=$sql->fetch(PDO::FETCH_ASSOC);
+            $res=$sql->fetch(\PDO::FETCH_ASSOC);
 
             if($res["auth_token"]==$this->getSessionKey()){
                 return true;
@@ -163,14 +164,14 @@ class LoginMaster{
 
         $sql=$this->config->getPDO()->prepare("SELECT COUNT(id) AS count, user FROM login_remember WHERE remember_token=:token and until>:until");
         $sql->execute(array(":token"=>$this->getRememberKey(), ":until"=>date("Y-m-d H:i:s")));
-        $res=$sql->fetch(PDO::FETCH_ASSOC);
+        $res=$sql->fetch(\PDO::FETCH_ASSOC);
 
         if($res["count"]==0){
             $this->addHistory(self::NOUSER, self::LOGIN_FAILED);
             return null;
         }
         else{
-            return res["user"];
+            return $res["user"];
         }
     }
 
@@ -227,7 +228,7 @@ class LoginMaster{
         if($this->config->getBanEnable()){
             $sql=$this->config->getPDO()->prepare("SELECT COUNT(id) AS count FROM login_bans WHERE ip=:ip and until>:until");
             $sql->execute(array(":ip"=>$_SERVER["REMOTE_ADDR"], ":until"=>date("Y-m-d H:i:s")));
-            $res=$sql->fetch(PDO::FETCH_ASSOC);
+            $res=$sql->fetch(\PDO::FETCH_ASSOC);
 
             if($res["count"]!=0){
                 //user banned
@@ -239,7 +240,7 @@ class LoginMaster{
         //count failed attempts
         $sql=$this->config->getPDO()->prepare("SELECT COUNT(id) AS count FROM login_history WHERE ip=:ip and date>:date and success=0");
         $sql->execute(array(":ip"=>$_SERVER["REMOTE_ADDR"], ":date"=>date("Y-m-d H:i:s", time()-$this->config->getLookTime())));
-        $fails=$sql->fetch(PDO::FETCH_ASSOC)["count"];
+        $fails=$sql->fetch(\PDO::FETCH_ASSOC)["count"];
 
         //check if we need to force captcha
         if($this->config->getCaptchaEnable() && $fails>=$this->config->getCaptchaAfter()){
